@@ -3,6 +3,8 @@
 # GROUP 52: Mitchell Layton, Caroline Mai, William Powell
 #---------------------------------------------------------
 
+
+
 #1)---------------------------------------------------------------------
 
 
@@ -118,7 +120,7 @@ one_dist = as.matrix(dist(dist_mat,method = "euclidian"))
 #5)---------------------------------------------------------------------
 
 
-cv_error_knn = function(train_data,k) {
+cv_error_knn = function(train_data,k,metric) {
 
     #Create 10 equally size folds
     folds <- cut(seq(1,nrow(train_data[2:257])),breaks = 10,labels = FALSE)
@@ -132,7 +134,7 @@ cv_error_knn = function(train_data,k) {
             trained = train_data[-test_indexes, ]
 
             #Use the test and train data partitions:
-            P = as.data.table(predict_knn(tested,trained,k,"euclidian"))
+            P = as.data.table(predict_knn(tested,trained,k,metric))
             x = length(which(P!=compare))
             y = x/length(compare)
             y
@@ -140,8 +142,9 @@ cv_error_knn = function(train_data,k) {
     m = mean(y)
     return(m)
 }
-cv_error = cv_error_knn(train,90)
+cv_error = cv_error_knn(train,90,"euclidian")
 cv_error
+
 
 
 
