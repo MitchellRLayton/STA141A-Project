@@ -2,9 +2,10 @@
 # Due December 5, 2017 @ 5:00 PM
 # GROUP 52: Mitchell Layton, Caroline Mai, William Powell
 #---------------------------------------------------------
-
-
-
+library(ggthemes)
+library(reshape)
+library(ggplot2)
+library(parallelDist)
 #1)---------------------------------------------------------------------
 
 
@@ -71,10 +72,10 @@ predict_knn = function(points, train, k, metric) {
     predictions = c(rep(NA,nrow(points)))
     
     #A matrix of the prediction points, excluding the class values, to use for the distance function
-    dist_mat = rbind(points,train[1:nrow(train),])[,2:257]
+    dist_mat = as.matrix(rbind(points,train[1:nrow(train),])[,2:257])
     
     #A matrix of all the distances
-    one_dist = as.matrix(dist(dist_mat,method = metric))
+    one_dist = as.matrix(parDist(dist_mat,method = metric))
     
         for (i in 1:nrow(points)){
                 #frequencies of the nearest classes stored in "classes"
@@ -109,14 +110,6 @@ predict_knn(test[1:5,],train,100,"euclidean")
 predict_knn(test,train,90,"minkowski")
 
 
-
-
-
-points = test[1:5,]
-one_dist = as.matrix(dist(dist_mat,method = "euclidian"))
-
-
-
 #5)---------------------------------------------------------------------
 
 
@@ -142,8 +135,48 @@ cv_error_knn = function(train_data,k,metric) {
     m = mean(y)
     return(m)
 }
-cv_error = cv_error_knn(train,90,"euclidian")
+cv_error = cv_error_knn(train,1,"euclidean")
 cv_error
+
+
+
+#6)---------------------------------------------------------------------
+
+
+rates1 = c(rep(0,15))
+rates2 = c(rep(0,15))
+
+for (i in 1:15) { 
+    
+    error_rates_EUC = cv_error_knn(train,i,"euclidean")
+    error_rates_MAN = cv_error_knn(train,i,"manhattan")
+    
+    rates1[i] = error_rates_EUC
+    rates2[i] = error_rates_MAN
+    
+}
+
+
+x = seq(1,15,1)
+data = as.data.frame(cbind(x,rates1,rates2))
+names(data) = c("k","Euclidean","Manhattan")
+data = melt(data, id = "k")
+names(data) = c("k","Distance Metric","CV_Error")
+
+p = ggplot(data) + 
+        geom_point(aes(x = k, y = CV_Error, colour = `Distance Metric`), size = 4, shape = 19) +
+        geom_text_repel(aes(x=k,y=CV_Error,label=round(CV_Error,5)),size=3.15) +
+        theme_dark() +
+        scale_x_continuous("k", breaks = c(seq(1,15,1))) +
+        scale_y_continuous("CV Error Rates") +
+        labs(title = "K-Dependent CV Error Rates") + 
+        theme(axis.title.x = element_text(size = rel(1.25))) +
+        theme(axis.title.y = element_text(size = rel(1.15))) +
+        theme(axis.text.x = element_text(size = rel(1.25))) +
+        theme(axis.text.y = element_text(size = rel(1.25))) + 
+        theme(title = element_text(size = rel(1.5))) 
+p
+
 
 
 
