@@ -33,8 +33,6 @@ view_digit = function(read_data, observation) {
 view_digit(train,130)
 
 
-
-
 #3)---------------------------------------------------------------------
 
 
@@ -144,6 +142,7 @@ cv_error
 rates1 = c(rep(0,15))
 rates2 = c(rep(0,15))
 
+start_time <- Sys.time()
 for (i in 1:15) { 
     
     error_rates_EUC = cv_error_knn(train,i,"euclidean")
@@ -153,7 +152,8 @@ for (i in 1:15) {
     rates2[i] = error_rates_MAN
     
 }
-
+end_time <- Sys.time()
+end_time - start_time
 
 x = seq(1,15,1)
 data = as.data.frame(cbind(x,rates1,rates2))
@@ -161,8 +161,11 @@ names(data) = c("k","Euclidean","Manhattan")
 data = melt(data, id = "k")
 names(data) = c("k","Distance Metric","CV_Error")
 
+
+
 p = ggplot(data) + 
     geom_point(aes(x = k, y = CV_Error, colour = `Distance Metric`), size = 4, shape = 19) +
+    geom_line(aes(x=k,y=CV_Error, colour = `Distance Metric`)) +
     geom_text_repel(aes(x=k,y=CV_Error,label=round(CV_Error,5)),size=3.15) +
     theme_calc() +
     scale_x_continuous("k", breaks = c(seq(1,15,1))) +
@@ -178,6 +181,45 @@ p = ggplot(data) +
 
     
 p
+
+
+#7)---------------------------------------------------------------------
+
+create_errormatrix = function(train_data,k,metric) {
+    
+    #Create 10 equally size folds
+    folds <- cut(seq(1,nrow(train_data[2:257])),breaks = 10,labels = FALSE)
+    
+    #Empty vectors to append the predictions and real values
+    all_P = c()
+    all_real = c()
+    #Perform 10 fold cross validation
+    for(i in 1:10) {
+        #Segement your data by fold using the which() function 
+        test_indexes <- which(folds == i,arr.ind = TRUE)
+        tested = train_data[test_indexes, ]
+        all_real = c(all_real,tested$V1)
+        trained = train_data[-test_indexes, ]
+        
+        #Use the test and train data partitions:
+        P = predict_knn(tested,trained,k,metric)
+        all_P = c(all_P,P)
+    }
+    #Use all the appended values in the matrix
+    return(data.frame(real = all_real, prediction = all_P))
+}
+#The data frame now has all 7291 obs.
+
+
+start_time <- Sys.time()
+for (i in c(1,3,4)) { #3 best K-values and dist metric
+    
+    testing = create_errormatrix(train,i,"euclidean")
+    print(table(testing))
+    
+}
+end_time <- Sys.time()
+end_time - start_time
 
 
 
