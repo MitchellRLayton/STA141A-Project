@@ -1,6 +1,4 @@
 # STA 141A - Final Project 
-# Due December 5, 2017 @ 5:00 PM
-# GROUP 52: Mitchell Layton, Caroline Mai, William Powell
 #---------------------------------------------------------
 library(ggthemes)
 library(reshape)
