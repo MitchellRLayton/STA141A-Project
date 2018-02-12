@@ -1,5 +1,5 @@
-# STA141A-Project
-Final Project for Statistics 141A 
+# STA141A-Homeworks_and_Projects
+Final project & homework assignments for Statistics 141A 
 
 
 
